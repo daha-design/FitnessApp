@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="FitnessApp.Console/FitnessApp.Console.csproj" />
+  <Project Path="FitnessApp.Logic/FitnessApp.Logic.csproj" />
+  <Project Path="FitnessApp.WinForms/FitnessApp.WinForms.csproj" />
+</Solution>
