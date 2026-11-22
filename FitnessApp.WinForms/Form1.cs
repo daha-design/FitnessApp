@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Ninject; // <--- ДОБАВЛЕНО для работы IoC-контейнера
 using FitnessApp.Logic.Models;
 using FitnessApp.Logic.Services;
 
@@ -8,7 +9,9 @@ namespace FitnessApp.WinForms
 {
     public partial class Form1 : Form
     {
-        private readonly TrainingService service = new TrainingService();
+        // ИЗМЕНЕНО: Теперь мы не создаем репозиторий напрямую. 
+        // Мы объявляем сервис, а Ninject сам его соберет.
+        private readonly TrainingService service;
 
         private TextBox txtId = new TextBox();
         private TextBox txtName = new TextBox();
@@ -22,11 +25,17 @@ namespace FitnessApp.WinForms
 
         public Form1()
         {
+            // 1. Создаем ядро Ninject с нашим модулем конфигурации
+            // (Убедитесь, что вы создали файл SimpleConfigModule.cs в проекте WinForms)
+            IKernel ninjectKernel = new StandardKernel(new SimpleConfigModule());
+
+            // 2. Достаем готовый сервис из контейнера
+            service = ninjectKernel.Get<TrainingService>();
+
             Text = "Fitness App";
             Size = new Size(600, 650);
             StartPosition = FormStartPosition.CenterScreen;
 
-            // ВАЖНО: Включаем авто-масштабирование для правильного отображения
             AutoScaleMode = AutoScaleMode.Font;
 
             CreateInterface();
@@ -105,8 +114,6 @@ namespace FitnessApp.WinForms
         {
             Button button = new Button();
             button.Text = text;
-
-            // Исправлено: используем Left/Top вместо Location для надежности
             button.Left = x;
             button.Top = y;
             button.Size = new Size(200, 30);
@@ -114,9 +121,6 @@ namespace FitnessApp.WinForms
             button.Click += (sender, e) => action();
             Controls.Add(button);
         }
-
-        // ... Остальные методы (AddTraining, UpdateTraining и т.д.) оставляем как были ...
-        // Я их не меняю, они у вас правильные.
 
         private void AddTraining()
         {
@@ -145,10 +149,17 @@ namespace FitnessApp.WinForms
                 return;
             }
 
-            service.UpdateTraining(id, txtName.Text, DateTime.Now, duration);
+            bool updated = service.UpdateTraining(id, txtName.Text, DateTime.Now, duration);
 
-            MessageBox.Show("Данные обновлены!");
-            ShowTrainings();
+            if (updated)
+            {
+                MessageBox.Show("Данные обновлены!");
+                ShowTrainings();
+            }
+            else
+            {
+                MessageBox.Show("Тренировка с таким ID не найдена!");
+            }
         }
 
         private void DeleteTraining()
@@ -159,10 +170,17 @@ namespace FitnessApp.WinForms
                 return;
             }
 
-            service.DeleteTraining(id);
+            bool deleted = service.DeleteTraining(id);
 
-            MessageBox.Show("Тренировка удалена!");
-            ShowTrainings();
+            if (deleted)
+            {
+                MessageBox.Show("Тренировка удалена!");
+                ShowTrainings();
+            }
+            else
+            {
+                MessageBox.Show("Тренировка с таким ID не найдена!");
+            }
         }
 
         private void AddExercise()
@@ -181,10 +199,18 @@ namespace FitnessApp.WinForms
             }
 
             Exercise exercise = new Exercise(txtExercise.Text, sets, reps, weight);
-            service.AddExercise(id, exercise);
 
-            MessageBox.Show("Упражнение добавлено!");
-            ShowTrainings();
+            bool added = service.AddExercise(id, exercise);
+
+            if (added)
+            {
+                MessageBox.Show("Упражнение добавлено!");
+                ShowTrainings();
+            }
+            else
+            {
+                MessageBox.Show("Тренировка с таким ID не найдена!");
+            }
         }
 
         private void ShowTrainings()
@@ -193,7 +219,7 @@ namespace FitnessApp.WinForms
 
             foreach (Training t in service.GetAllTrainings())
             {
-                lstTrainings.Items.Add($"ID: {t.Id} | {t.Name} | {t.Duration} мин.");
+                lstTrainings.Items.Add($"ID: {t.ID} | {t.Name} | {t.Duration} мин.");
 
                 foreach (Exercise e in t.Exercises)
                 {

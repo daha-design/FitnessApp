@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Ninject" Version="3.3.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FitnessApp.DataAccessLayer\FitnessApp.DataAccessLayer.csproj" />
     <ProjectReference Include="..\FitnessApp.Logic\FitnessApp.Logic.csproj" />
   </ItemGroup>
 

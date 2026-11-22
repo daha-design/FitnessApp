@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using FitnessApp.Logic.Interfaces;
 
 namespace FitnessApp.Logic.Models
 {
     /// <summary>
     /// Представляет тренировку пользователя.
     /// </summary>
-    public class Training
+    public class Training : IDomainObject
     {
         /// <summary>
         /// Уникальный идентификатор тренировки.
         /// </summary>
-        public int Id { get; set; }
+        public int ID { get; set; }
 
         /// <summary>
         /// Название тренировки.
@@ -29,20 +30,28 @@ namespace FitnessApp.Logic.Models
         public int Duration { get; set; }
 
         /// <summary>
-        /// Список упражнений данной тренировки.
+        /// Список упражнений тренировки.
         /// </summary>
         public List<Exercise> Exercises { get; set; }
 
         /// <summary>
         /// Создаёт новую тренировку.
         /// </summary>
-        public Training(int id, string name,
-                        DateTime date, int duration)
+        public Training(int id, string name, DateTime date, int duration)
         {
-            Id = id;
+            ID = id;
             Name = name;
             Date = date;
             Duration = duration;
+            Exercises = new List<Exercise>();
+        }
+
+        /// <summary>
+        /// Конструктор для Entity Framework.
+        /// </summary>
+        public Training()
+        {
+            Name = string.Empty;
             Exercises = new List<Exercise>();
         }
     }

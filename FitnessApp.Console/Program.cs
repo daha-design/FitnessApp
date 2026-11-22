@@ -1,7 +1,9 @@
-﻿using System;
-using System.Linq;
-using FitnessApp.Logic.Models;
+﻿using FitnessApp.Logic.Models;
 using FitnessApp.Logic.Services;
+using FitnessApp.WinForms;
+using Ninject; // <--- ДОБАВЛЕНО для работы IoC-контейнера
+using System;
+using System.Linq;
 
 namespace FitnessApp.ConsoleApp
 {
@@ -10,13 +12,21 @@ namespace FitnessApp.ConsoleApp
     /// </summary>
     internal class Program
     {
-        private static readonly TrainingService _service = new TrainingService();
+        // ИЗМЕНЕНО: Теперь мы не создаем репозиторий напрямую.
+        // Сервис будет получен из контейнера Ninject в методе Main.
+        private static TrainingService _service;
 
         /// <summary>
         /// Точка входа в программу.
         /// </summary>
         static void Main(string[] args)
         {
+            // 1. Создаем ядро Ninject с нашим модулем конфигурации
+            IKernel ninjectKernel = new StandardKernel(new SimpleConfigModule());
+
+            // 2. Достаем готовый сервис из контейнера
+            _service = ninjectKernel.Get<TrainingService>();
+
             while (true)
             {
                 PrintMenu();
@@ -83,7 +93,7 @@ namespace FitnessApp.ConsoleApp
             foreach (Training t in trainings)
             {
                 Console.WriteLine(
-                    $"\nID: {t.Id} | Название: {t.Name} | " +
+                    $"\nID: {t.ID} | Название: {t.Name} | " +
                     $"Дата: {t.Date.ToShortDateString()} | " +
                     $"Длительность: {t.Duration} мин");
 
